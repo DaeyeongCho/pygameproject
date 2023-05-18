@@ -21,6 +21,7 @@ def playGame() :
     score = 0
     heart = 3
     screenmode = 0 #화면 모드(0 = 메인 화면, 1 = 게임중, 2 = 점수 조회, 3 = 게임 패배 후 결과화면)
+    playerName = ""
     finalScore = None
 
 
@@ -28,30 +29,32 @@ def playGame() :
     while True :
         (pygame.time.Clock()).tick(1000)  #노트 속도 조절
         screen.blit(background, (0, 0))
+        font = pygame.font.Font("./font/NanumGothic.ttf", 30)
 
-
+## ************************* 메인 화면 ************************* ##
         if(screenmode == 0) :
             for e in pygame.event.get() :
                 if e.type in [pygame.QUIT]  :
                     pygame.quit()
                     sys.exit()
                 
-                if e.type in [pygame.KEYDOWN] : #키 눌렀을 때
-                    if e.key == pygame.K_UP :
+                elif e.type in [pygame.KEYDOWN] : #키 눌렀을 때
+                    if e.key == pygame.K_UP : #윗쪽 방향키는 게임 초기화 및 게임 시작
                         for i in noteObjects :
                             i = [False, 0, 0]
-                        noteDropCycle = 500 #노트가 내려오는 주기. 숫자 작을수록 자주 내려옴
-                        noteCycle = 0 #noteSpeed 틱마다 노트를 내려보냄
-                        selectNoteIndex = 0 #다음 출발 시킬 노트 인덱스
-                        pushing = [False] * 4 #좌상하우 각 방향키가 눌리는 중인지 여부
-                        evaluationDisplay = [0, 0] #[엑설런트, 굳 등 표시 카운터] [표시 할 단어 miss, good, grate, excellent 순서]
+                        noteDropCycle = 500
+                        noteCycle = 0
+                        selectNoteIndex = 0
+                        pushing = [False] * 4
+                        evaluationDisplay = [0, 0]
                         score = 0
                         heart = 3
-                        screenmode = 1 #화면 모드(0 = 메인 화면, 1 = 게임중, 2 = 점수 조회)
+                        playerName = ""
                         finalScore = None
-                    if e.key == pygame.K_DOWN :
+                        screenmode = 1
+                    if e.key == pygame.K_DOWN : #아랫쪽 방향키는 점수 조회
                         pass
-            font = pygame.font.Font("./font/NanumGothic.ttf", 30)
+
             paintEntity(pygame.image.load(nonPushImages[1]), 100, 400)
             textGameStart = font.render("GameStart", True, (255, 255, 255)) #게임 시작 버튼
             screen.blit(textGameStart, (200, 420))
@@ -59,7 +62,7 @@ def playGame() :
             textScoreInquiry = font.render("점수 조회", True, (255, 255, 255)) #점수 조회 버튼
             screen.blit(textScoreInquiry, (200, 520))
                         
-        
+## ************************* 게임 화면 ************************* ##
         elif(screenmode == 1) :
             # 키보드나 마우스 이벤트가 들어오는지 체크한다.
             for e in pygame.event.get() :
@@ -190,35 +193,41 @@ def playGame() :
                 paintEntity(pygame.image.load(evaluationImages[evaluationDisplay[1]]), 101, 450)
                 evaluationDisplay[0] -= 1
 
-            font = pygame.font.Font("./font/NanumGothic.ttf", 30)
             textScore = font.render("Score: " + str(score), True, (255, 255, 255)) #점수 표시
             screen.blit(textScore, (200, 50))
             textHeart = font.render("Heart: " + str(heart), True, (255, 0, 0)) #목숨 표시
             screen.blit(textHeart, (200, 100))
             if heart <= 0 :
                 finalScore = score
+                playerName = ""
                 screenmode = 3
-            
+
+## ************************* 점수 화면 ************************* ##
         elif(screenmode == 2):
             pass
         
+## ************************* 결과 화면 ************************* ##
         elif(screenmode == 3) :
             for e in pygame.event.get() :
                 if e.type in [pygame.QUIT]  :
                     pygame.quit()
                     sys.exit()
+                if e.type in [pygame.KEYDOWN] :
+                    if len(playerName) < 5 :
+                        playerName += e.dict['unicode']
             
             textGameover = font.render("GAME OVER!!", True, (255, 0, 0)) #목숨 표시
             screen.blit(textGameover, (150, 200))
             textFinalScore = font.render("Final Score: " + str(finalScore), True, (255, 0, 0)) #목숨 표시
             screen.blit(textFinalScore, (150, 250))
+            textPlayerName = font.render("이름 입력: " + str(playerName), True, (255, 255, 255)) #목숨 표시
+            screen.blit(textPlayerName, (150, 350))
         
         else :
             screenmode = 0
 
 
         pygame.display.update()
-        print(f'~', end = '')
 
 
 # 전역변수 선언
