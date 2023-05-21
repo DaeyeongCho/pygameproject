@@ -1,6 +1,7 @@
 import pygame
 import random
 import sys
+import sqlite3
 
 #매개 변수로 받은 객체 좌표위치에 그리기
 def paintEntity(entity, x, y) :
@@ -20,8 +21,9 @@ def playGame() :
     evaluationDisplay = [0, 0] #[엑설런트, 굳 등 표시 카운터] [표시 할 단어 miss, good, grate, excellent 순서]
     score = 0
     heart = 3
-    screenmode = 0 #화면 모드(0 = 메인 화면, 1 = 게임중, 2 = 점수 조회, 3 = 게임 패배 후 결과화면)
+    screenmode = 0 #화면 모드(0 = 메인 화면, 1 = 게임중, 2 = 점수 조회, 3 = 게임 패배 후 결과화면, 4 = 랭킹 리스트 초기화)
     playerName = ""
+    ranking = [] #랭킹 리스트
     finalScore = None
 
 
@@ -40,8 +42,9 @@ def playGame() :
                 
                 elif e.type in [pygame.KEYDOWN] : #키 눌렀을 때
                     if e.key == pygame.K_UP : #윗쪽 방향키는 게임 초기화 및 게임 시작
-                        for i in noteObjects :
-                            i = [False, 0, 0]
+                        noteObjects = [] #[존재 여부 True/False] [이미지 및 x좌표(출현 x위치) 0 ~ 3] [y좌표]
+                        for i in range(30) :
+                            noteObjects.append([False, 0, 0])
                         noteDropCycle = 500
                         noteCycle = 0
                         selectNoteIndex = 0
@@ -53,7 +56,7 @@ def playGame() :
                         finalScore = None
                         screenmode = 1
                     if e.key == pygame.K_DOWN : #아랫쪽 방향키는 점수 조회
-                        pass
+                        screenmode = 4
 
             paintEntity(pygame.image.load(nonPushImages[1]), 100, 400)
             textGameStart = font.render("GameStart", True, (255, 255, 255)) #게임 시작 버튼
@@ -204,7 +207,27 @@ def playGame() :
 
 ## ************************* 점수 화면 ************************* ##
         elif(screenmode == 2):
-            pass
+            for e in pygame.event.get() :
+                if e.type in [pygame.QUIT]  :
+                    pygame.quit()
+                    sys.exit()
+                if e.type in [pygame.KEYDOWN] :
+                    if e.key == pygame.K_RETURN :
+                        screenmode = 0
+            textRANKING = font.render("RANKING", True, (255, 0, 255)) #목숨 표시
+            screen.blit(textRANKING, (180, 50))
+            textPLAYERSCORE = font.render("SCORE     /     PLAYER", True, (0, 255, 255)) #목숨 표시
+            screen.blit(textPLAYERSCORE, (110, 100))
+            textEXIT = font.render("PRESS ENTER to Exit", True, (0, 0, 255)) #목숨 표시
+            screen.blit(textEXIT, (110, 650))
+
+            for i in range(len(ranking)) :
+                textSCOREBoard = font.render("%3d" % (ranking[i][1]), True, (255, 255, 255)) #목숨 표시
+                screen.blit(textSCOREBoard, (130, (i + 3) * 50))
+                textPLAYERBoard = font.render("%6s" % (ranking[i][0]), True, (255, 255, 255)) #목숨 표시
+                screen.blit(textPLAYERBoard, (280, (i + 3) * 50))
+            
+
         
 ## ************************* 결과 화면 ************************* ##
         elif(screenmode == 3) :
@@ -214,7 +237,20 @@ def playGame() :
                     sys.exit()
                 if e.type in [pygame.KEYDOWN] :
                     if len(playerName) < 5 :
-                        playerName += e.dict['unicode']
+                        if ((e.dict['unicode'] >= 'a') and (e.dict['unicode'] <= 'z')) or ((e.dict['unicode'] >= 'A') and (e.dict['unicode'] <= 'Z')) :
+                            playerName += e.dict['unicode'].upper()
+                    if e.key == pygame.K_RETURN :
+                        mydb = sqlite3.connect("./db/mydb")
+                        cursor = mydb.cursor()
+                        cursor.execute("SELECT COUNT (*) FROM sqlite_master WHERE type='table' AND name='myTable'")
+                        result = cursor.fetchone()
+                        if result[0] == 0 :
+                            cursor.execute("CREATE TABLE myTable (playerName char(5), score int)")
+                        cursor.execute(f"INSERT INTO myTable VALUES('{playerName}', {finalScore})")
+                        mydb.commit()
+                        mydb.close()
+                        screenmode = 4
+
             
             textGameover = font.render("GAME OVER!!", True, (255, 0, 0)) #목숨 표시
             screen.blit(textGameover, (150, 200))
@@ -222,7 +258,25 @@ def playGame() :
             screen.blit(textFinalScore, (150, 250))
             textPlayerName = font.render("이름 입력: " + str(playerName), True, (255, 255, 255)) #목숨 표시
             screen.blit(textPlayerName, (150, 350))
-        
+## ************************* 랭킹 초기화 ************************* ##
+        elif(screenmode == 4) :
+            mydb = sqlite3.connect("./db/mydb")
+            cursor = mydb.cursor()
+            cursor.execute("SELECT COUNT (*) FROM sqlite_master WHERE type='table' AND name='myTable'")
+            result = cursor.fetchone()
+            if result[0] == 0 :
+                cursor.execute("CREATE TABLE myTable (playerName char(5), score int)")
+            cursor.execute("SELECT * FROM myTable ORDER BY score DESC")
+            ranking = []
+            for i in range(10):
+                row = cursor.fetchone()
+                if row == None :
+                    break
+                else:
+                    ranking.append(row)
+            mydb.close()
+            screenmode = 2
+## ************************* 오류 방지 ************************* ##
         else :
             screenmode = 0
 
