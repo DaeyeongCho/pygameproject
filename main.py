@@ -58,11 +58,13 @@ def playGame() :
                     if e.key == pygame.K_DOWN : #아랫쪽 방향키는 점수 조회
                         screenmode = 4
 
+            textMain = font.render("타이밍 맞추기 게임", True, (255, 0, 255)) #게임 시작 버튼
+            screen.blit(textMain, (130, 150))
             paintEntity(pygame.image.load(nonPushImages[1]), 100, 400)
             textGameStart = font.render("GameStart", True, (255, 255, 255)) #게임 시작 버튼
             screen.blit(textGameStart, (200, 420))
             paintEntity(pygame.image.load(nonPushImages[2]), 100, 500)
-            textScoreInquiry = font.render("점수 조회", True, (255, 255, 255)) #점수 조회 버튼
+            textScoreInquiry = font.render("랭킹 보드", True, (255, 255, 255)) #점수 조회 버튼
             screen.blit(textScoreInquiry, (200, 520))
                         
 ## ************************* 게임 화면 ************************* ##
@@ -252,12 +254,14 @@ def playGame() :
                         screenmode = 4
 
             
-            textGameover = font.render("GAME OVER!!", True, (255, 0, 0)) #목숨 표시
+            textGameover = font.render("GAME OVER!!", True, (255, 0, 0))
             screen.blit(textGameover, (150, 200))
-            textFinalScore = font.render("Final Score: " + str(finalScore), True, (255, 0, 0)) #목숨 표시
+            textFinalScore = font.render("Final Score: " + str(finalScore), True, (255, 0, 0))
             screen.blit(textFinalScore, (150, 250))
-            textPlayerName = font.render("이름 입력: " + str(playerName), True, (255, 255, 255)) #목숨 표시
+            textPlayerName = font.render("이름 입력: " + str(playerName), True, (255, 255, 255))
             screen.blit(textPlayerName, (150, 350))
+            textNEXT = font.render("PRESS ENTER to Next", True, (0, 0, 255))
+            screen.blit(textNEXT, (100, 500))
 ## ************************* 랭킹 초기화 ************************* ##
         elif(screenmode == 4) :
             mydb = sqlite3.connect("./db/mydb")
@@ -299,7 +303,7 @@ noteFixX = [51, 151, 251, 351]
 # 초기 세팅
 pygame.init()
 screen = pygame.display.set_mode((swidth, sheight))
-pygame.display.set_caption('리듬게임')
+pygame.display.set_caption('타이밍 맞추기 게임')
 
 noteSize = pygame.image.load("./images/rednote.png").get_rect().size
 
