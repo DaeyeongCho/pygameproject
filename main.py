@@ -39,7 +39,6 @@ def playGame() :
                 if e.type in [pygame.QUIT]  :
                     pygame.quit()
                     sys.exit()
-                
                 elif e.type in [pygame.KEYDOWN] : #키 눌렀을 때
                     if e.key == pygame.K_UP : #윗쪽 방향키는 게임 초기화 및 게임 시작
                         noteObjects = [] #[존재 여부 True/False] [이미지 및 x좌표(출현 x위치) 0 ~ 3] [y좌표]
@@ -57,6 +56,8 @@ def playGame() :
                         screenmode = 1
                     if e.key == pygame.K_DOWN : #아랫쪽 방향키는 점수 조회
                         screenmode = 4
+                    if e.key == pygame.K_ESCAPE :
+                        screenmode = 5
 
             textMain = font.render("타이밍 맞추기 게임", True, (255, 0, 255)) #게임 시작 버튼
             screen.blit(textMain, (130, 150))
@@ -281,6 +282,22 @@ def playGame() :
             mydb.close()
             screenmode = 2
 ## ************************* 오류 방지 ************************* ##
+        elif(screenmode == 5) :
+            for e in pygame.event.get() :
+                if e.type in [pygame.QUIT]  :
+                    pygame.quit()
+                    sys.exit()
+                if e.type in [pygame.KEYDOWN] :
+                    if e.key == pygame.K_RETURN :
+                        pygame.quit()
+                        sys.exit()
+                    if e.key == pygame.K_ESCAPE :
+                        screenmode = 0
+            textEXIT = font.render("게임을 끝내시겠습니까?", True, (255, 255, 255))
+            screen.blit(textEXIT, (100, 200))
+            textEndtoExit = font.render("끝내려면 ENTER", True, (255, 0, 0))
+            screen.blit(textEndtoExit, (145, 500))
+        
         else :
             screenmode = 0
 
